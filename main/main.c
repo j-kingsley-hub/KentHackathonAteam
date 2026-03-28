@@ -12,6 +12,8 @@
 #include "gemini_client.h"
 #include "lv_port.h"
 #include "bsp_btn.h"
+#include "button_gpio.h"
+#include "button.h"
 
 // Declare the external image struct
 extern const lv_img_dsc_t dogprototype_img;
@@ -118,7 +120,7 @@ void app_main(void)
     // Initialize Camera
     usb_camera_init();
 
-    // Initialize Button using BSP
+    // Initialize Onboard User Button (GPIO 38, top of the SenseCAP Indicator)
     bsp_btn_register_callback(BOARD_BTN_ID_USER, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
 
     // Initialize LVGL content

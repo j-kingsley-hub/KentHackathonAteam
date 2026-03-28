@@ -32,3 +32,6 @@ dependencies.lock
 tools/flash_firmware
 
 *.zip
+
+# DO NOT PUSH API KEY!!!!
+.env
