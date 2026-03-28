@@ -1,0 +1,7 @@
+{
+    "idf.port": "/dev/ttyUSB0",
+    "idf.openOcdConfigs": [
+        "board/esp32s3-builtin.cfg"
+    ],
+    "C_Cpp.intelliSenseEngine": "Tag Parser"
+}
