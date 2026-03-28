@@ -9,8 +9,12 @@
 #include "lvgl.h"
 #include "button_gpio.h"
 #include "usb_camera.h"
-#include "button.h"
 #include "gemini_client.h"
+#include "lv_port.h"
+#include "bsp_btn.h"
+
+// Declare the external image struct
+extern const lv_img_dsc_t dogprototype_img;
 
 static const char *TAG = "CAVEMEN_DOG";
 // update_ui declaration (used by gemini client)
@@ -41,6 +45,7 @@ static lv_obj_t *ui_label = NULL;
 
 void update_ui(const char *voice_line, const char *color_hex_str)
 {
+    lv_port_sem_take();
     lv_obj_t *scr = lv_scr_act();
 
     // Parse color (e.g. "#FF0000" or "FF0000")
@@ -58,6 +63,7 @@ void update_ui(const char *voice_line, const char *color_hex_str)
     {
         lv_label_set_text(ui_label, voice_line ? voice_line : "Unknown Dog noise");
     }
+    lv_port_sem_give();
 }
 
 // Dummy audio play logic (would normally write to I2S / bsp codec)
@@ -69,14 +75,23 @@ static void play_voice_line(const char *voice_line)
 
 static void app_lvgl_display(void)
 {
+    lv_port_sem_take();
     // Basic LVGL setup for initial UI
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_color(scr, lv_color_hex(0x000000), 0); // Black background
 
+    // Create an image object and set the dog picture
+    lv_obj_t *img = lv_img_create(scr);
+    lv_img_set_src(img, &dogprototype_img);
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, -40); // Align center, slightly up
+
     ui_label = lv_label_create(scr);
     lv_label_set_text(ui_label, "Cavemen's Best Friend\nWaiting for trigger...");
-    lv_obj_center(ui_label);
+    lv_obj_align(ui_label, LV_ALIGN_CENTER, 0, 100);
     lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_align(ui_label, LV_TEXT_ALIGN_CENTER, 0);
+
+    lv_port_sem_give();
 }
 
 void app_main(void)
@@ -96,26 +111,15 @@ void app_main(void)
     ESP_LOGI(TAG, "Initializing BSP...");
     ESP_ERROR_CHECK(bsp_board_init());
 
+    // Initialize LVGL port
+    ESP_LOGI(TAG, "Initializing LVGL port...");
+    lv_port_init();
+
     // Initialize Camera
     usb_camera_init();
 
-    // Initialize Button
-    button_config_t gpio_btn_cfg = {
-        .type = BUTTON_TYPE_GPIO,
-        .gpio_button_config = {
-            .gpio_num = TRIGGER_BUTTON_GPIO,
-            .active_level = 0,
-        },
-    };
-    button_handle_t gpio_btn = button_create(&gpio_btn_cfg);
-    if (NULL == gpio_btn)
-    {
-        ESP_LOGE(TAG, "Button create failed");
-    }
-    else
-    {
-        button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, button_single_click_cb);
-    }
+    // Initialize Button using BSP
+    bsp_btn_register_callback(BOARD_BTN_ID_USER, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
 
     // Initialize LVGL content
     ESP_LOGI(TAG, "Initializing LVGL UI...");
