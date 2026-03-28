@@ -64,7 +64,7 @@ void gemini_client_init(void)
 
 void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
 {
-    ESP_LOGI(TAG, "Sending image of size %d to Gemini...", img_size);
+    ESP_LOGI(TAG, "Sending image of size %zu to Gemini...", img_size);
 
     esp_http_client_config_t config = {
         .url = GEMINI_WEBHOOK_URL,
@@ -88,9 +88,9 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
 
     if (err == ESP_OK)
     {
-        ESP_LOGI(TAG, "HTTPS Status = %d, content_length = %d",
+        ESP_LOGI(TAG, "HTTPS Status = %d, content_length = %lld",
                  esp_http_client_get_status_code(client),
-                 esp_http_client_get_content_length(client));
+                 (long long)esp_http_client_get_content_length(client));
     }
     else
     {

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
@@ -7,7 +9,7 @@
 #include "lvgl.h"
 #include "button_gpio.h"
 #include "usb_camera.h"
-#include "iot_button.h"
+#include "button.h"
 #include "gemini_client.h"
 
 static const char *TAG = "CAVEMEN_DOG";
@@ -16,8 +18,9 @@ void update_ui(const char *voice_line, const char *color_hex_str);
 
 #define TRIGGER_BUTTON_GPIO 0 // BOOT button for prototype, change to grove GPIO if mapped
 
-static void button_single_click_cb(void *arg, void *usr_data)
+static void button_single_click_cb(void *arg)
 {
+    (void)arg;
     ESP_LOGI(TAG, "Button pressed! Capturing image...");
 
     uint8_t *img_buf = NULL;
@@ -25,7 +28,7 @@ static void button_single_click_cb(void *arg, void *usr_data)
 
     if (usb_camera_capture_image(&img_buf, &img_size))
     {
-        ESP_LOGI(TAG, "Image captured! Size: %d bytes. Sending to Gemini...", img_size);
+        ESP_LOGI(TAG, "Image captured! Size: %zu bytes. Sending to Gemini...", img_size);
         gemini_client_send_image(img_buf, img_size);
     }
     else
@@ -38,7 +41,6 @@ static lv_obj_t *ui_label = NULL;
 
 void update_ui(const char *voice_line, const char *color_hex_str)
 {
-    bsp_display_lock(0);
     lv_obj_t *scr = lv_scr_act();
 
     // Parse color (e.g. "#FF0000" or "FF0000")
@@ -56,8 +58,6 @@ void update_ui(const char *voice_line, const char *color_hex_str)
     {
         lv_label_set_text(ui_label, voice_line ? voice_line : "Unknown Dog noise");
     }
-
-    bsp_display_unlock();
 }
 
 // Dummy audio play logic (would normally write to I2S / bsp codec)
@@ -70,8 +70,6 @@ static void play_voice_line(const char *voice_line)
 static void app_lvgl_display(void)
 {
     // Basic LVGL setup for initial UI
-    bsp_display_lock(0);
-
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_color(scr, lv_color_hex(0x000000), 0); // Black background
 
@@ -79,8 +77,6 @@ static void app_lvgl_display(void)
     lv_label_set_text(ui_label, "Cavemen's Best Friend\nWaiting for trigger...");
     lv_obj_center(ui_label);
     lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
-
-    bsp_display_unlock();
 }
 
 void app_main(void)
@@ -106,29 +102,23 @@ void app_main(void)
     // Initialize Button
     button_config_t gpio_btn_cfg = {
         .type = BUTTON_TYPE_GPIO,
-        .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS,
-        .short_press_time = CONFIG_BUTTON_SHORT_PRESS_TIME_MS,
         .gpio_button_config = {
             .gpio_num = TRIGGER_BUTTON_GPIO,
             .active_level = 0,
         },
     };
-    button_handle_t gpio_btn = iot_button_create(&gpio_btn_cfg);
+    button_handle_t gpio_btn = button_create(&gpio_btn_cfg);
     if (NULL == gpio_btn)
     {
         ESP_LOGE(TAG, "Button create failed");
     }
     else
     {
-        iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
+        button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, button_single_click_cb);
     }
 
-    // Initialize LCD and LVGL
-    ESP_LOGI(TAG, "Initializing Display & LVGL...");
-    ESP_ERROR_CHECK(bsp_board_lcd_init());
-    bsp_display_start();
-    bsp_board_lcd_set_backlight(100); // 100% backlight
-
+    // Initialize LVGL content
+    ESP_LOGI(TAG, "Initializing LVGL UI...");
     app_lvgl_display();
 
     while (1)
