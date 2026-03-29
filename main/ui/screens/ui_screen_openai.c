@@ -47,6 +47,16 @@ void ui_screen_openai_screen_init(void)
     lv_obj_add_flag(ui_openai_log, LV_OBJ_FLAG_ADV_HITTEST);  /// Flags
     lv_obj_clear_flag(ui_openai_log, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
+    ui_openai_response_box = lv_obj_create(ui_screen_openai);
+    lv_obj_set_width(ui_openai_response_box, 300);
+    lv_obj_set_height(ui_openai_response_box, 100);
+    lv_obj_align(ui_openai_response_box, LV_ALIGN_TOP_MID, 0, 110);
+    lv_obj_set_style_bg_color(ui_openai_response_box, lv_color_hex(0x101418), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_openai_response_box, 240, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_openai_response_box, lv_color_hex(0x3A3F47), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_openai_response_box, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_openai_response_box, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     ui_chatgpt_btn = lv_btn_create(ui_screen_openai);
     lv_obj_set_width(ui_chatgpt_btn, 300);
     lv_obj_set_height(ui_chatgpt_btn, 60);
@@ -159,9 +169,11 @@ void ui_screen_openai_screen_init(void)
     lv_obj_align(ui_image, LV_ALIGN_CENTER, 0, -20);
 
     extern lv_obj_t *ui_label;
-    ui_label = lv_label_create(ui_screen_openai);
-    lv_label_set_text(ui_label, "Ready format!");
-    lv_obj_align(ui_label, LV_ALIGN_BOTTOM_MID, 0, -20);
+    ui_label = lv_label_create(ui_openai_response_box);
+    lv_obj_set_width(ui_label, lv_pct(100));
+    lv_label_set_long_mode(ui_label, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(ui_label, "Press the button to send a photo to Gemini.");
+    lv_obj_align(ui_label, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_align(ui_label, LV_TEXT_ALIGN_CENTER, 0);
 }

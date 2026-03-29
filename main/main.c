@@ -87,11 +87,13 @@ static void button_single_click_cb(void *arg)
     if (usb_camera_capture_image(&img_buf, &img_size))
     {
         ESP_LOGI(TAG, "Image captured! Size: %zu bytes. Sending to Gemini...", img_size);
+        update_ui("Sending image to Gemini...", "#202020");
         gemini_client_send_image(img_buf, img_size);
     }
     else
     {
         ESP_LOGE(TAG, "Failed to capture image.");
+        update_ui("Failed to capture image.", "#800000");
     }
 }
 
@@ -125,6 +127,7 @@ void app_main(void)
 
     // Initialize Camera
     usb_camera_init();
+    gemini_client_init();
 
     lv_port_init();
 
