@@ -67,6 +67,7 @@ static void button_single_click_cb(void *arg)
     (void)arg;
     ESP_LOGI(TAG, "Button pressed! Switching to talking image and capturing image...");
 
+    lv_port_sem_take();
     if (ui_image == NULL)
     {
         ESP_LOGW(TAG, "Button pressed before UI image was ready");
@@ -80,6 +81,11 @@ static void button_single_click_cb(void *arg)
             lv_timer_reset(image_toggle_timer);
         }
     }
+    if (ui_label)
+    {
+        lv_label_set_text(ui_label, "Taking picture...");
+    }
+    lv_port_sem_give();
 
     uint8_t *img_buf = NULL;
     size_t img_size = 0;
@@ -87,13 +93,23 @@ static void button_single_click_cb(void *arg)
     if (usb_camera_capture_image(&img_buf, &img_size))
     {
         ESP_LOGI(TAG, "Image captured! Size: %zu bytes. Sending to Gemini...", img_size);
-        update_ui("Sending image to Gemini...", "#202020");
+        lv_port_sem_take();
+        if (ui_label)
+        {
+            lv_label_set_text(ui_label, "Image captured! Sending to AI...");
+        }
+        lv_port_sem_give();
         gemini_client_send_image(img_buf, img_size);
     }
     else
     {
         ESP_LOGE(TAG, "Failed to capture image.");
-        update_ui("Failed to capture image.", "#800000");
+        lv_port_sem_take();
+        if (ui_label)
+        {
+            lv_label_set_text(ui_label, "Failed to capture image.");
+        }
+        lv_port_sem_give();
     }
 }
 
