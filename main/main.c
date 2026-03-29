@@ -72,14 +72,12 @@ static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
 
 static void update_selection_label(void)
 {
-    lv_port_sem_take();
     if (ui_label)
     {
         char text[64];
         snprintf(text, sizeof(text), "Selected: %s", selection_names[current_selection]);
         lv_label_set_text(ui_label, text);
     }
-    lv_port_sem_give();
 }
 
 static void image_toggle_timer_cb(lv_timer_t *timer)
@@ -144,7 +142,9 @@ static void button_double_click_cb(void *arg)
     ESP_LOGI(TAG, "Image selection changed to %s", selection_names[current_selection]);
     if (ui_label)
     {
+        lv_port_sem_take();
         update_selection_label();
+        lv_port_sem_give();
     }
 }
 
