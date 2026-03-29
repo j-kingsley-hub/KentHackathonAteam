@@ -9,16 +9,19 @@ void ui_screen_openai_screen_init(void)
 {
     ui_screen_openai = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_screen_openai, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    lv_obj_set_style_bg_color(ui_screen_openai, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_time4 = lv_label_create(ui_screen_openai);
-    lv_obj_set_width(ui_time4, LV_SIZE_CONTENT);  /// 1
-    lv_obj_set_height(ui_time4, LV_SIZE_CONTENT); /// 1
+    lv_obj_add_flag(ui_time4, LV_OBJ_FLAG_HIDDEN); // HIDDEN per request
+    lv_obj_set_width(ui_time4, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_time4, LV_SIZE_CONTENT);  /// 1
     lv_obj_set_x(ui_time4, 30);
     lv_obj_set_y(ui_time4, 20);
     lv_label_set_text(ui_time4, "21:20");
     lv_obj_set_style_text_font(ui_time4, &ui_font_font1, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_wifi__st_btn_7 = lv_btn_create(ui_screen_openai);
+    lv_obj_add_flag(ui_wifi__st_btn_7, LV_OBJ_FLAG_HIDDEN); // HIDDEN per request
     lv_obj_set_width(ui_wifi__st_btn_7, 60);
     lv_obj_set_height(ui_wifi__st_btn_7, 60);
     lv_obj_set_x(ui_wifi__st_btn_7, -10);
@@ -48,13 +51,13 @@ void ui_screen_openai_screen_init(void)
     lv_obj_clear_flag(ui_openai_log, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
     ui_openai_response_box = lv_obj_create(ui_screen_openai);
-    lv_obj_set_width(ui_openai_response_box, 300);
-    lv_obj_set_height(ui_openai_response_box, 100);
-    lv_obj_align(ui_openai_response_box, LV_ALIGN_TOP_MID, 0, 110);
-    lv_obj_set_style_bg_color(ui_openai_response_box, lv_color_hex(0x101418), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_openai_response_box, 240, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(ui_openai_response_box, lv_color_hex(0x3A3F47), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(ui_openai_response_box, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_width(ui_openai_response_box, 220);
+    lv_obj_set_height(ui_openai_response_box, 400);
+    lv_obj_align(ui_openai_response_box, LV_ALIGN_RIGHT_MID, -10, -20);
+    lv_obj_set_style_bg_color(ui_openai_response_box, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_openai_response_box, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_openai_response_box, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_openai_response_box, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(ui_openai_response_box, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_chatgpt_btn = lv_btn_create(ui_screen_openai);
@@ -166,12 +169,12 @@ void ui_screen_openai_screen_init(void)
     extern lv_obj_t *ui_image;
     ui_image = lv_img_create(ui_screen_openai);
     lv_img_set_src(ui_image, &dogprototype_img);
-    lv_obj_align(ui_image, LV_ALIGN_CENTER, 0, -20);
+    lv_obj_align(ui_image, LV_ALIGN_LEFT_MID, 10, -20);
     // Send dog image to the background so it doesn't cover UI elements
     lv_obj_move_background(ui_image);
 
     // Reposition the opaque box to the bottom
-    lv_obj_align(ui_openai_response_box, LV_ALIGN_BOTTOM_MID, 0, -30);
+    lv_obj_align(ui_openai_response_box, LV_ALIGN_RIGHT_MID, -10, -20);
 
     extern lv_obj_t *ui_label;
     ui_label = lv_label_create(ui_openai_response_box);
@@ -180,6 +183,6 @@ void ui_screen_openai_screen_init(void)
     lv_label_set_text(ui_label, "Press the button to send a photo to Gemini.");
     // Center it in the box
     lv_obj_align(ui_label, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_color(ui_label, lv_color_hex(0x000000), 0);
     lv_obj_set_style_text_align(ui_label, LV_TEXT_ALIGN_CENTER, 0);
 }
