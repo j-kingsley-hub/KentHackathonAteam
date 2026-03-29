@@ -12,19 +12,24 @@ static size_t last_frame_size = 0;
 
 static void camera_frame_cb(uvc_frame_t *frame, void *ptr)
 {
-    if (frame->data_bytes > 0 && frame->data) {
+    if (frame->data_bytes > 0 && frame->data)
+    {
         // Free previous frame if it exists
-        if (last_frame_buf) {
+        if (last_frame_buf)
+        {
             free(last_frame_buf);
             last_frame_buf = NULL;
         }
 
         // Allocate memory for new frame
         last_frame_buf = heap_caps_malloc(frame->data_bytes, MALLOC_CAP_SPIRAM);
-        if (last_frame_buf) {
+        if (last_frame_buf)
+        {
             memcpy(last_frame_buf, frame->data, frame->data_bytes);
             last_frame_size = frame->data_bytes;
-        } else {
+        }
+        else
+        {
             ESP_LOGE(TAG, "Failed to allocate memory for frame");
             last_frame_size = 0;
         }
@@ -33,10 +38,13 @@ static void camera_frame_cb(uvc_frame_t *frame, void *ptr)
 
 static void camera_state_cb(usb_stream_state_t state, void *ptr)
 {
-    if (state == STREAM_CONNECTED) {
+    if (state == STREAM_CONNECTED)
+    {
         ESP_LOGI(TAG, "USB Camera Connected");
         camera_ready = true;
-    } else {
+    }
+    else
+    {
         ESP_LOGI(TAG, "USB Camera Disconnected");
         camera_ready = false;
     }
@@ -52,34 +60,40 @@ void usb_camera_init(void)
         .xfer_buffer_b = heap_caps_malloc(40 * 1024, MALLOC_CAP_SPIRAM),
         .frame_buffer_size = 150 * 1024,
         .frame_buffer = heap_caps_malloc(150 * 1024, MALLOC_CAP_SPIRAM),
-        .frame_width = 320,  // Some basic Brio resolution, try 320x240 first
-        .frame_height = 240,
-        .frame_interval = FRAME_INTERVAL_FPS_15,
+        .frame_width = FRAME_RESOLUTION_ANY,
+        .frame_height = FRAME_RESOLUTION_ANY,
+        .frame_interval = 0, // Let driver pick matching interval
         .format = UVC_FORMAT_MJPEG,
         .frame_cb = camera_frame_cb,
         .frame_cb_arg = NULL,
     };
 
-    if (uvc_config.xfer_buffer_a == NULL || uvc_config.xfer_buffer_b == NULL || uvc_config.frame_buffer == NULL) {
+    if (uvc_config.xfer_buffer_a == NULL || uvc_config.xfer_buffer_b == NULL || uvc_config.frame_buffer == NULL)
+    {
         ESP_LOGE(TAG, "Failed to allocate memory for USB stream buffers in SPIRAM");
         return;
     }
 
     esp_err_t ret = uvc_streaming_config(&uvc_config);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to config UVC stream: %s", esp_err_to_name(ret));
         return;
     }
 
     ret = usb_streaming_state_register(camera_state_cb, NULL);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to register state cb: %s", esp_err_to_name(ret));
     }
 
     ret = usb_streaming_start();
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to start UVC stream: %s", esp_err_to_name(ret));
-    } else {
+    }
+    else
+    {
         ESP_LOGI(TAG, "UVC Camera setup complete. Waiting for connection...");
     }
 }
