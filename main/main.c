@@ -126,9 +126,6 @@ void app_main(void)
     // Initialize Camera
     usb_camera_init();
 
-    // Initialize Onboard User Button (GPIO 38, top of the SenseCAP Indicator)
-    bsp_btn_register_callback(BOARD_BTN_ID_USER, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
-
     lv_port_init();
 
     esp_event_loop_args_t view_event_task_args = {
@@ -154,6 +151,10 @@ void app_main(void)
 
     indicator_model_init();
     indicator_controller_init();
+
+    // Initialize Onboard User Button (GPIO 38, top of the SenseCAP Indicator)
+    // We register this AFTER indicator_model_init() so it overrides the default screen toggle
+    bsp_btn_register_callback(BOARD_BTN_ID_USER, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
 
     static char buffer[128]; /* Make sure buffer is enough for `sprintf` */
     while (1)
