@@ -80,11 +80,13 @@ static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
 extern const lv_img_dsc_t dino_thumb_img;
 extern const lv_img_dsc_t caveman_thumb_img;
 extern const lv_img_dsc_t mammoth_thumb_img;
+extern const lv_img_dsc_t dino3_thumb_img;
 
 static const lv_img_dsc_t *thumb_images[IMAGE_SELECTION_COUNT] = {
     &dino_thumb_img,
     &caveman_thumb_img,
     &mammoth_thumb_img,
+    &dino3_thumb_img,
 };
 
 static void update_selection_label(void)

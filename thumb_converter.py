@@ -44,3 +44,4 @@ def convert_image(input_file, output_file, var_name, size=(160, 160)):
 convert_image('main/img/DinoTest2.jpg', 'main/dino_thumb.c', 'dino_thumb_img')
 convert_image('main/img/CaveManTest.jpg', 'main/caveman_thumb.c', 'caveman_thumb_img')
 convert_image('main/img/MammothTest.jpg', 'main/mammoth_thumb.c', 'mammoth_thumb_img')
+convert_image('main/img/DinoTest3.jpg', 'main/dino3_thumb.c', 'dino3_thumb_img')
