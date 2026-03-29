@@ -13,7 +13,6 @@
 #include "indev/indev.h"
 #include "sdkconfig.h"
 
-#include "indicator_display.h"
 
 #define LV_PORT_BUFFER_HEIGHT           (brd->LCD_HEIGHT)
 #define LV_PORT_BUFFER_MALLOC           (MALLOC_CAP_SPIRAM)
@@ -52,7 +51,7 @@ void lv_port_init(void)
     lv_port_tick_init();
 
     lvgl_mutex = xSemaphoreCreateMutex();
-    xTaskCreate(lvgl_task, "lvgl_task", 4096 * 4, NULL, CONFIG_LCD_TASK_PRIORITY, &lvgl_task_handle);
+    xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, CONFIG_LCD_TASK_PRIORITY, &lvgl_task_handle);
 }
 
 void lv_port_sem_take(void)
@@ -160,8 +159,6 @@ static IRAM_ATTR void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *
         data->point.y = CONFIG_LCD_EVB_SCREEN_HEIGHT - indev_data.y;
         x = data->point.x;
         y = data->point.y;
-
-        indicator_display_sleep_restart();
     } else {
         data->state = LV_INDEV_STATE_REL;
         data->point.x = x;
