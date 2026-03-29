@@ -47,7 +47,8 @@ void update_ui(const char *voice_line, const char *color_hex_str)
         color_val = (int)strtol(color_hex_str, NULL, 16);
     }
 
-    if (ui_screen_openai) {
+    if (ui_screen_openai)
+    {
         lv_obj_set_style_bg_color(ui_screen_openai, lv_color_hex(color_val), 0);
     }
 
@@ -82,7 +83,7 @@ void app_main(void)
     ESP_LOGI("", SENSECAP, VERSION, __DATE__, __TIME__);
 
     ESP_ERROR_CHECK(bsp_board_init());
-    
+
     // Initialize Camera
     usb_camera_init();
 
@@ -99,7 +100,7 @@ void app_main(void)
         .task_core_id = tskNO_AFFINITY};
 
     ESP_ERROR_CHECK(esp_event_loop_create(&view_event_task_args, &view_event_handle));
-    
+
     lv_port_sem_take();
     indicator_view_init();
     lv_port_sem_give();

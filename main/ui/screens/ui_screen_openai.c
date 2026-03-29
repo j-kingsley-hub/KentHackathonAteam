@@ -151,7 +151,7 @@ void ui_screen_openai_screen_init(void)
     lv_obj_add_flag(ui_chatgpt_btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(ui_set_api_key_btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(ui_dalle_btn, LV_OBJ_FLAG_HIDDEN);
-    
+
     extern const lv_img_dsc_t dogprototype_img;
     lv_obj_t *img = lv_img_create(ui_screen_openai);
     lv_img_set_src(img, &dogprototype_img);
@@ -163,5 +163,4 @@ void ui_screen_openai_screen_init(void)
     lv_obj_align(ui_dog_label, LV_ALIGN_CENTER, 0, 100);
     lv_obj_set_style_text_color(ui_dog_label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_align(ui_dog_label, LV_TEXT_ALIGN_CENTER, 0);
-
 }
