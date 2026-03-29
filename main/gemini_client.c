@@ -8,7 +8,7 @@
 
 static const char *TAG = "GEMINI_CLIENT";
 extern void update_ui(const char *voice_line, const char *color_hex_str);
-static const char *GEMINI_WEBHOOK_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+static const char *GEMINI_WEBHOOK_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 static bool _base64_encode(const uint8_t *input, size_t input_len, char **output)
 {

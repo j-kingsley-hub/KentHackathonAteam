@@ -18,6 +18,8 @@
 extern const lv_img_dsc_t dogprototype_img;
 extern const lv_img_dsc_t dogprototype3_img;
 extern const lv_img_dsc_t dogTalking_img;
+extern const uint8_t dinotest1_jpg[];
+extern const size_t dinotest1_jpg_size;
 
 ESP_EVENT_DEFINE_BASE(VIEW_EVENT_BASE);
 esp_event_loop_handle_t view_event_handle;
@@ -65,7 +67,7 @@ static void image_toggle_timer_cb(lv_timer_t *timer)
 static void button_single_click_cb(void *arg)
 {
     (void)arg;
-    ESP_LOGI(TAG, "Button pressed! Switching to talking image and capturing image...");
+    ESP_LOGI(TAG, "Button pressed! Switching to talking image and sending DinoTest1.jpg...");
 
     lv_port_sem_take();
     if (ui_image == NULL)
@@ -83,37 +85,11 @@ static void button_single_click_cb(void *arg)
     }
     if (ui_label)
     {
-        lv_label_set_text(ui_label, "Taking picture...");
+        lv_label_set_text(ui_label, "Sending DinoTest1.jpg to Gemini...");
     }
     lv_port_sem_give();
 
-    uint8_t *img_buf = NULL;
-    size_t img_size = 0;
-    const char *camera_err_msg = "Unknown error";
-
-    if (usb_camera_capture_image(&img_buf, &img_size, &camera_err_msg))
-    {
-        ESP_LOGI(TAG, "Image captured! Size: %zu bytes. Sending to Gemini...", img_size);
-        lv_port_sem_take();
-        if (ui_label)
-        {
-            lv_label_set_text(ui_label, "Image captured! Sending to AI...");
-        }
-        lv_port_sem_give();
-        gemini_client_send_image(img_buf, img_size);
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Failed to capture image: %s", camera_err_msg);
-        lv_port_sem_take();
-        if (ui_label)
-        {
-            char error_str[64];
-            snprintf(error_str, sizeof(error_str), "Failed: %s", camera_err_msg);
-            lv_label_set_text(ui_label, error_str);
-        }
-        lv_port_sem_give();
-    }
+    gemini_client_send_image((uint8_t *)dinotest1_jpg, dinotest1_jpg_size);
 }
 
 void update_ui(const char *voice_line, const char *color_hex_str)
@@ -144,8 +120,8 @@ void app_main(void)
 
     ESP_ERROR_CHECK(bsp_board_init());
 
-    // Initialize Camera
-    usb_camera_init();
+    // Camera initialization is not required for button-triggered static image sends
+    // usb_camera_init();
     gemini_client_init();
 
     lv_port_init();
