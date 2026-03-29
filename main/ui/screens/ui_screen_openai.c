@@ -146,4 +146,22 @@ void ui_screen_openai_screen_init(void)
     lv_obj_set_style_bg_opa(ui_scrolldots43, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_scrolldots43, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_scrolldots43, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_add_flag(ui_openai_log, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_chatgpt_btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_set_api_key_btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_dalle_btn, LV_OBJ_FLAG_HIDDEN);
+    
+    extern const lv_img_dsc_t dogprototype_img;
+    lv_obj_t *img = lv_img_create(ui_screen_openai);
+    lv_img_set_src(img, &dogprototype_img);
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, -40);
+
+    extern lv_obj_t *ui_dog_label;
+    ui_dog_label = lv_label_create(ui_screen_openai);
+    lv_label_set_text(ui_dog_label, "Cavemen's Best Friend\nWaiting for trigger...");
+    lv_obj_align(ui_dog_label, LV_ALIGN_CENTER, 0, 100);
+    lv_obj_set_style_text_color(ui_dog_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_align(ui_dog_label, LV_TEXT_ALIGN_CENTER, 0);
+
 }

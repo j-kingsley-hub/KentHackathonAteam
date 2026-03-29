@@ -14,6 +14,6 @@ set(UTIL_DIR ./util)
 file(GLOB_RECURSE UTIL_SOURCES ${UTIL_DIR}/*.c)
 
 idf_component_register(
-    SRCS "main.c" "lv_port.c" ${UI_SOURCES} ${MODEL_SOURCES} ${VIEW_SOURCES} ${CONTROLLER_SOURCES} ${UTIL_SOURCES}
+    SRCS "main.c" "lv_port.c" "gemini_client.c" "usb_camera.c" "dogprototype_img.c" ${UI_SOURCES} ${MODEL_SOURCES} ${VIEW_SOURCES} ${CONTROLLER_SOURCES} ${UTIL_SOURCES}
     INCLUDE_DIRS "."  ${UI_DIR} ${MODEL_DIR} ${VIEW_DIR} ${CONTROLLER_DIR} ${UTIL_DIR}
     EMBED_TXTFILES timeapi_cert.pem)
