@@ -47,6 +47,8 @@ static const char *TAG = "app_main";
 "
 lv_obj_t *ui_image = NULL;
 lv_obj_t *ui_label = NULL;
+lv_obj_t *ui_selection_box = NULL;
+lv_obj_t *ui_selection_label = NULL;
 static lv_timer_t *image_toggle_timer = NULL;
 static bool button_showing_talking = false;
 static const lv_img_dsc_t *ui_images[] = {
@@ -76,11 +78,11 @@ static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
 
 static void update_selection_label(void)
 {
-    if (ui_label)
+    if (ui_selection_label)
     {
         char text[64];
         snprintf(text, sizeof(text), "Selected: %s", selection_names[current_selection]);
-        lv_label_set_text(ui_label, text);
+        lv_label_set_text(ui_selection_label, text);
     }
 }
 
@@ -144,7 +146,7 @@ static void button_double_click_cb(void *arg)
     (void)arg;
     current_selection = (current_selection + 1) % IMAGE_SELECTION_COUNT;
     ESP_LOGI(TAG, "Image selection changed to %s", selection_names[current_selection]);
-    if (ui_label)
+    if (ui_selection_label)
     {
         lv_port_sem_take();
         update_selection_label();
