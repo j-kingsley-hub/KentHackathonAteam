@@ -1293,7 +1293,7 @@ static void __view_event_handler(void *handler_args, esp_event_base_t base, int3
         lv_label_set_text(ui_min_dis, buf_m);
 
         lv_snprintf(buf, sizeof(buf), "%02d:%02d", hour, timeinfo.tm_min);
-        lv_label_set_text(ui_time2, buf);
+        if (ui_time2) if (ui_time2) lv_label_set_text(ui_time2, buf);
         lv_label_set_text(ui_time3, buf);
         lv_label_set_text(ui_time4, buf);
 
@@ -1462,7 +1462,7 @@ static void __view_event_handler(void *handler_args, esp_event_base_t base, int3
         }
 
         lv_img_set_src(ui_wifi_st_1, (void *)p_src);
-        lv_img_set_src(ui_wifi_st_2, (void *)p_src);
+        if (ui_wifi_st_2) if (ui_wifi_st_2) lv_img_set_src(ui_wifi_st_2, (void *)p_src);
         lv_img_set_src(ui_wifi_st_3, (void *)p_src);
         lv_img_set_src(ui_wifi_st_4, (void *)p_src);
         lv_img_set_src(ui_wifi_st_5, (void *)p_src);
@@ -1558,28 +1558,28 @@ static void __view_event_handler(void *handler_args, esp_event_base_t base, int3
         {
             snprintf(data_buf, sizeof(data_buf), "%d", (int)p_data->vaule);
             ESP_LOGI(TAG, "update co2:%s", data_buf);
-            lv_label_set_text(ui_co2_data, data_buf);
+            if(ui_co2_data) if(ui_co2_data) lv_label_set_text(ui_co2_data, data_buf);
             break;
         }
         case SENSOR_DATA_TVOC:
         {
             snprintf(data_buf, sizeof(data_buf), "%d", (int)p_data->vaule);
             ESP_LOGI(TAG, "update tvoc:%s", data_buf);
-            lv_label_set_text(ui_tvoc_data, data_buf);
+            if(ui_tvoc_data) if(ui_tvoc_data) lv_label_set_text(ui_tvoc_data, data_buf);
             break;
         }
         case SENSOR_DATA_TEMP:
         {
             snprintf(data_buf, sizeof(data_buf), "%.1f", p_data->vaule);
             ESP_LOGI(TAG, "update temp:%s", data_buf);
-            lv_label_set_text(ui_temp_data_2, data_buf);
+            if(ui_temp_data_2) if(ui_temp_data_2) lv_label_set_text(ui_temp_data_2, data_buf);
             break;
         }
         case SENSOR_DATA_HUMIDITY:
         {
             snprintf(data_buf, sizeof(data_buf), "%d", (int)p_data->vaule);
             ESP_LOGI(TAG, "update humidity:%s", data_buf);
-            lv_label_set_text(ui_humidity_data_2, data_buf);
+            if(ui_humidity_data_2) if(ui_humidity_data_2) lv_label_set_text(ui_humidity_data_2, data_buf);
             break;
         }
         default:

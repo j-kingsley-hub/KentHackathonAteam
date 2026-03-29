@@ -8,7 +8,10 @@
 #include <string.h>
 
 static const char *TAG = "GEMINI_CLIENT";
+static bool s_is_blind = false;
+
 extern void update_ui(const char *voice_line, const char *color_hex_str);
+extern void update_blind_ui(const char *text, const char *color_hex_str);
 static const char *GEMINI_WEBHOOK_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 static const char *PROMPT_TEXT = "Instructions:\n\n"
@@ -176,17 +179,38 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
                 cJSON *color = cJSON_GetObjectItem(root, "color_hex");
                 if (response_text)
                 {
-                    update_ui(response_text, "#FFFFFF");
+                    if (s_is_blind)
+                    {
+                        update_blind_ui(response_text, "#FFFFFF");
+                    }
+                    else
+                    {
+                        update_ui(response_text, "#FFFFFF");
+                    }
                 }
                 else
                 {
-                    update_ui("Gemini returned no text result.", "#800000");
+                    if (s_is_blind)
+                    {
+                        update_blind_ui("Gemini returned no text result.", "#800000");
+                    }
+                    else
+                    {
+                        update_ui("Gemini returned no text result.", "#800000");
+                    }
                 }
                 cJSON_Delete(root);
             }
             else
             {
-                update_ui("Failed to parse Gemini response.", "#800000");
+                if (s_is_blind)
+                {
+                    update_blind_ui("Failed to parse Gemini response.", "#800000");
+                }
+                else
+                {
+                    update_ui("Failed to parse Gemini response.", "#800000");
+                }
             }
             free(resp->data);
             resp->data = NULL;
@@ -194,7 +218,14 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
         }
         else if (resp)
         {
-            update_ui("Gemini returned no response.", "#800000");
+            if (s_is_blind)
+            {
+                update_blind_ui("Gemini returned no response.", "#800000");
+            }
+            else
+            {
+                update_ui("Gemini returned no response.", "#800000");
+            }
         }
         break;
     case HTTP_EVENT_DISCONNECTED:
@@ -212,14 +243,27 @@ void gemini_client_init(void)
     // TODO: initialize network stack or API key retrieval if needed.
 }
 
-void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
+void gemini_client_send_image(uint8_t *img_buf, size_t img_size, bool is_blind)
 {
+    s_is_blind = is_blind;
+
+    s_is_blind = is_blind;
+
     ESP_LOGI(TAG, "Sending image of size %zu to Gemini...", img_size);
+    ESP_LOGI(TAG, "Free internal heap: %u", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+    ESP_LOGI(TAG, "Free SPIRAM: %u", heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
     char *image_b64 = NULL;
     if (!_base64_encode(img_buf, img_size, &image_b64))
     {
-        update_ui("Image encoding failed.", "#800000");
+        if (s_is_blind)
+        {
+            update_blind_ui("Image encoding failed.", "#800000");
+        }
+        else
+        {
+            update_ui("Image encoding failed.", "#800000");
+        }
         return;
     }
 
@@ -245,7 +289,14 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
         ESP_LOGE(TAG, "Failed to build Gemini request body");
         cJSON_Delete(root);
         free(image_b64);
-        update_ui("Request body build failed.", "#800000");
+        if (s_is_blind)
+        {
+            update_blind_ui("Request body build failed.", "#800000");
+        }
+        else
+        {
+            update_ui("Request body build failed.", "#800000");
+        }
         return;
     }
 
@@ -268,7 +319,14 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
         free(request_body);
         cJSON_Delete(root);
         free(image_b64);
-        update_ui("HTTP client init failed.", "#800000");
+        if (s_is_blind)
+        {
+            update_blind_ui("HTTP client init failed.", "#800000");
+        }
+        else
+        {
+            update_ui("HTTP client init failed.", "#800000");
+        }
         return;
     }
 
@@ -282,7 +340,14 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Error perform http request %s", esp_err_to_name(err));
-        update_ui("Gemini request failed.", "#800000");
+        if (s_is_blind)
+        {
+            update_blind_ui("Gemini request failed.", "#800000");
+        }
+        else
+        {
+            update_ui("Gemini request failed.", "#800000");
+        }
     }
     else
     {

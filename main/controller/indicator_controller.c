@@ -289,19 +289,8 @@ if ( event_code == LV_EVENT_CLICKED &&  cur_screen == ui_screen_sensor ) {
 }
 }
 
-static void __sensor_chart_event_init(void)
-{
-    lv_obj_add_event_cb(ui_co2, ui_event_sensor_co2_chart, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_tvoc_2, ui_event_sensor_tvoc_chart, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_temp2, ui_event_sensor_temp_chart, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_humidity2, ui_event_sensor_humidity_chart, LV_EVENT_ALL, NULL);
-}
-
-int indicator_controller_init(void)
-{
+int indicator_controller_init(void) {
     __time_cfg_envent_init();
     __display_cfg_event_init();
-    __sensor_chart_event_init();
-
     return 0;
 }
