@@ -8,10 +8,20 @@
 #include "usb_camera.h"
 #include "gemini_client.h"
 #include "bsp_btn.h"
+#include <stdlib.h>
+#include <string.h>
 
 #include "indicator_model.h"
 #include "indicator_view.h"
 // #include "indicator_controller.h"
+// Declare the external image structs
+extern const lv_img_dsc_t dogprototype_img;
+extern const lv_img_dsc_t dogprototype3_img;
+extern const lv_img_dsc_t dogTalking_img;
+
+ESP_EVENT_DEFINE_BASE(VIEW_EVENT_BASE);
+esp_event_loop_handle_t view_event_handle;
+lv_obj_t *ui_dog_label = NULL;
 
 static const char *TAG = "app_main";
 
@@ -27,42 +37,49 @@ static const char *TAG = "app_main";
  Version: %s %s %s\n\
 --------------------------------------------------------\n\
 "
+static lv_obj_t *ui_image = NULL;
+static lv_obj_t *ui_label = NULL;
+static lv_timer_t *image_toggle_timer = NULL;
+static bool button_showing_talking = false;
+static const lv_img_dsc_t *ui_images[] = {
+    &dogprototype_img,
+    &dogprototype3_img,
+};
+static uint8_t ui_image_index = 0;
 
-ESP_EVENT_DEFINE_BASE(VIEW_EVENT_BASE);
-esp_event_loop_handle_t view_event_handle;
-
-// Define for dog UI
-lv_obj_t *ui_dog_label = NULL;
-extern lv_obj_t *ui_screen_openai;
-
-void update_ui(const char *voice_line, const char *color_hex_str)
+static void image_toggle_timer_cb(lv_timer_t *timer)
 {
-    lv_port_sem_take();
-
-    int color_val = 0;
-    if (color_hex_str != NULL && strlen(color_hex_str) >= 6)
+    (void)timer;
+    if (button_showing_talking)
     {
-        if (color_hex_str[0] == '#')
-            color_hex_str++;
-        color_val = (int)strtol(color_hex_str, NULL, 16);
+        button_showing_talking = false;
+        ui_image_index = 0;
+        lv_img_set_src(ui_image, ui_images[ui_image_index]);
+        return;
     }
 
-    if (ui_screen_openai)
-    {
-        lv_obj_set_style_bg_color(ui_screen_openai, lv_color_hex(color_val), 0);
-    }
-
-    if (ui_dog_label)
-    {
-        lv_label_set_text(ui_dog_label, voice_line ? voice_line : "Unknown Dog noise");
-    }
-    lv_port_sem_give();
+    ui_image_index = 1 - ui_image_index;
+    lv_img_set_src(ui_image, ui_images[ui_image_index]);
 }
 
 static void button_single_click_cb(void *arg)
 {
     (void)arg;
-    ESP_LOGI(TAG, "Button pressed! Capturing image...");
+    ESP_LOGI(TAG, "Button pressed! Switching to talking image and capturing image...");
+
+    if (ui_image == NULL)
+    {
+        ESP_LOGW(TAG, "Button pressed before UI image was ready");
+    }
+    else
+    {
+        lv_img_set_src(ui_image, &dogTalking_img);
+        button_showing_talking = true;
+        if (image_toggle_timer != NULL)
+        {
+            lv_timer_reset(image_toggle_timer);
+        }
+    }
 
     uint8_t *img_buf = NULL;
     size_t img_size = 0;
@@ -78,8 +95,32 @@ static void button_single_click_cb(void *arg)
     }
 }
 
+void update_ui(const char *voice_line, const char *color_hex_str)
+{
+    lv_port_sem_take();
+    lv_obj_t *scr = lv_scr_act();
+
+    int color_val = 0;
+    if (color_hex_str != NULL && strlen(color_hex_str) >= 6)
+    {
+        if (color_hex_str[0] == '#')
+            color_hex_str++;
+        color_val = (int)strtol(color_hex_str, NULL, 16);
+    }
+
+    lv_obj_set_style_bg_color(scr, lv_color_hex(color_val), 0);
+
+    if (ui_label)
+    {
+        lv_label_set_text(ui_label, voice_line ? voice_line : "Unknown Dog noise");
+    }
+    lv_port_sem_give();
+}
+
 void app_main(void)
 {
+    esp_event_loop_handle_t view_event_handle;
+
     ESP_LOGI("", SENSECAP, VERSION, __DATE__, __TIME__);
 
     ESP_ERROR_CHECK(bsp_board_init());
