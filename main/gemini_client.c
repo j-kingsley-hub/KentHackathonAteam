@@ -109,14 +109,18 @@ static const char *_extract_text_from_response(cJSON *root)
                 return output->valuestring;
 
             cJSON *content = cJSON_GetObjectItem(first_candidate, "content");
-            if (content && cJSON_IsArray(content))
+            if (content)
             {
-                cJSON *first_content = cJSON_GetArrayItem(content, 0);
-                if (first_content)
+                cJSON *parts = cJSON_GetObjectItem(content, "parts");
+                if (parts && cJSON_IsArray(parts))
                 {
-                    cJSON *text = cJSON_GetObjectItem(first_content, "text");
-                    if (text && text->valuestring)
-                        return text->valuestring;
+                    cJSON *first_part = cJSON_GetArrayItem(parts, 0);
+                    if (first_part)
+                    {
+                        cJSON *text = cJSON_GetObjectItem(first_part, "text");
+                        if (text && text->valuestring)
+                            return text->valuestring;
+                    }
                 }
             }
         }
@@ -164,6 +168,7 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
         ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
         if (resp && resp->data && resp->size > 0)
         {
+            ESP_LOGI(TAG, "Raw response: %.*s", resp->size, resp->data);
             cJSON *root = cJSON_ParseWithLength(resp->data, resp->size);
             if (root)
             {
@@ -268,9 +273,9 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
     }
 
     esp_http_client_set_header(client, "Content-Type", "application/json");
-#ifdef GEMINI_API_KEY
-    esp_http_client_set_header(client, "Authorization", "Bearer " GEMINI_API_KEY);
-#endif
+    const char *GEMINI_API_KEY = "-----------------";
+    esp_http_client_set_header(client, "x-goog-api-key", GEMINI_API_KEY);
+    ESP_LOGI(TAG, "Using API key %s for authentication", GEMINI_API_KEY);
     esp_http_client_set_post_field(client, request_body, body_len);
 
     esp_err_t err = esp_http_client_perform(client);
