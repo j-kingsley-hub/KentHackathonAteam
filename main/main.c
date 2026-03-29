@@ -18,8 +18,8 @@
 extern const lv_img_dsc_t dogprototype_img;
 extern const lv_img_dsc_t dogprototype3_img;
 extern const lv_img_dsc_t dogTalking_img;
-extern const uint8_t dinotest1_jpg[];
-extern const size_t dinotest1_jpg_size;
+extern const uint8_t dinotest2_jpg[];
+extern const size_t dinotest2_jpg_size;
 extern const uint8_t cavemantest_jpg[];
 extern const size_t cavemantest_jpg_size;
 extern const uint8_t mammothtest_jpg[];
@@ -65,7 +65,7 @@ typedef enum
 
 static image_selection_t current_selection = IMAGE_SELECTION_DINO;
 static const char *selection_names[IMAGE_SELECTION_COUNT] = {
-    "DinoTest1.jpg",
+    "DinoTest2.jpg",
     "CaveManTest.jpg",
     "MammothTest.jpg",
 };
@@ -196,8 +196,8 @@ void app_main(void)
     lv_port_sem_take();
     indicator_view_init();
 
-    selection_buffers[IMAGE_SELECTION_DINO] = dinotest1_jpg;
-    selection_sizes[IMAGE_SELECTION_DINO] = dinotest1_jpg_size;
+    selection_buffers[IMAGE_SELECTION_DINO] = dinotest2_jpg;
+    selection_sizes[IMAGE_SELECTION_DINO] = dinotest2_jpg_size;
     selection_buffers[IMAGE_SELECTION_CAVEMAN] = cavemantest_jpg;
     selection_sizes[IMAGE_SELECTION_CAVEMAN] = cavemantest_jpg_size;
     selection_buffers[IMAGE_SELECTION_MAMMOTH] = mammothtest_jpg;
