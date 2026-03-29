@@ -13,7 +13,7 @@ file(GLOB_RECURSE CONTROLLER_SOURCES ${CONTROLLER_DIR}/*.c)
 set(UTIL_DIR ./util)
 file(GLOB_RECURSE UTIL_SOURCES ${UTIL_DIR}/*.c)
 
-file(GLOB_RECURSE MAIN_SOURCES "*.cpp" "*.c")
+file(GLOB_RECURSE MAIN_SOURCES "*.cpp" "*.c" "asteroid_death_jpg.c")
 
 idf_component_register(
     SRCS ${MAIN_SOURCES} ${UI_SOURCES} ${MODEL_SOURCES} ${VIEW_SOURCES} ${CONTROLLER_SOURCES} ${UTIL_SOURCES}
