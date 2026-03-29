@@ -13,17 +13,19 @@ void usb_camera_init(void)
     ESP_LOGW(TAG, "UVC camera support is not enabled in this build.");
 }
 
-bool usb_camera_capture_image(uint8_t **out_buf, size_t *out_size)
+bool usb_camera_capture_image(uint8_t **out_buf, size_t *out_size, const char **error_msg)
 {
     if (!camera_ready)
     {
         ESP_LOGE(TAG, "Camera not ready for capture.");
+        if (error_msg) *error_msg = "Camera not ready.";
         return false;
     }
 
     if (last_frame_buf == NULL)
     {
         ESP_LOGW(TAG, "No frame captured yet.");
+        if (error_msg) *error_msg = "No frame captured yet.";
         return false;
     }
 

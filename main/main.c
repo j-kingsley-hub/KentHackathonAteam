@@ -89,8 +89,9 @@ static void button_single_click_cb(void *arg)
 
     uint8_t *img_buf = NULL;
     size_t img_size = 0;
+    const char *camera_err_msg = "Unknown error";
 
-    if (usb_camera_capture_image(&img_buf, &img_size))
+    if (usb_camera_capture_image(&img_buf, &img_size, &camera_err_msg))
     {
         ESP_LOGI(TAG, "Image captured! Size: %zu bytes. Sending to Gemini...", img_size);
         lv_port_sem_take();
@@ -103,11 +104,13 @@ static void button_single_click_cb(void *arg)
     }
     else
     {
-        ESP_LOGE(TAG, "Failed to capture image.");
+        ESP_LOGE(TAG, "Failed to capture image: %s", camera_err_msg);
         lv_port_sem_take();
         if (ui_label)
         {
-            lv_label_set_text(ui_label, "Failed to capture image.");
+            char error_str[64];
+            snprintf(error_str, sizeof(error_str), "Failed: %s", camera_err_msg);
+            lv_label_set_text(ui_label, error_str);
         }
         lv_port_sem_give();
     }

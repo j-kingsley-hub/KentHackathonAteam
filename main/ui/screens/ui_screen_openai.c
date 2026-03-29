@@ -167,12 +167,18 @@ void ui_screen_openai_screen_init(void)
     ui_image = lv_img_create(ui_screen_openai);
     lv_img_set_src(ui_image, &dogprototype_img);
     lv_obj_align(ui_image, LV_ALIGN_CENTER, 0, -20);
+    // Send dog image to the background so it doesn't cover UI elements
+    lv_obj_move_background(ui_image);
+
+    // Reposition the opaque box to the bottom
+    lv_obj_align(ui_openai_response_box, LV_ALIGN_BOTTOM_MID, 0, -30);
 
     extern lv_obj_t *ui_label;
     ui_label = lv_label_create(ui_openai_response_box);
-    lv_obj_set_width(ui_label, lv_pct(100));
+    lv_obj_set_width(ui_label, lv_pct(90));
     lv_label_set_long_mode(ui_label, LV_LABEL_LONG_WRAP);
     lv_label_set_text(ui_label, "Press the button to send a photo to Gemini.");
+    // Center it in the box
     lv_obj_align(ui_label, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_align(ui_label, LV_TEXT_ALIGN_CENTER, 0);
