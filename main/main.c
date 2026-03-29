@@ -37,8 +37,8 @@ static const char *TAG = "app_main";
  Version: %s %s %s\n\
 --------------------------------------------------------\n\
 "
-static lv_obj_t *ui_image = NULL;
-static lv_obj_t *ui_label = NULL;
+lv_obj_t *ui_image = NULL;
+lv_obj_t *ui_label = NULL;
 static lv_timer_t *image_toggle_timer = NULL;
 static bool button_showing_talking = false;
 static const lv_img_dsc_t *ui_images[] = {
@@ -119,8 +119,6 @@ void update_ui(const char *voice_line, const char *color_hex_str)
 
 void app_main(void)
 {
-    esp_event_loop_handle_t view_event_handle;
-
     ESP_LOGI("", SENSECAP, VERSION, __DATE__, __TIME__);
 
     ESP_ERROR_CHECK(bsp_board_init());
@@ -144,6 +142,14 @@ void app_main(void)
 
     lv_port_sem_take();
     indicator_view_init();
+
+    // The view should have allocated ui_image and ui_label on ui_screen_openai
+    // We just need to start the timer!
+    if (ui_image != NULL) {
+        lv_img_set_src(ui_image, ui_images[ui_image_index]);
+    }
+    image_toggle_timer = lv_timer_create(image_toggle_timer_cb, 500, NULL);
+
     lv_port_sem_give();
 
     indicator_model_init();

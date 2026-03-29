@@ -153,14 +153,15 @@ void ui_screen_openai_screen_init(void)
     lv_obj_add_flag(ui_dalle_btn, LV_OBJ_FLAG_HIDDEN);
 
     extern const lv_img_dsc_t dogprototype_img;
-    lv_obj_t *img = lv_img_create(ui_screen_openai);
-    lv_img_set_src(img, &dogprototype_img);
-    lv_obj_align(img, LV_ALIGN_CENTER, 0, -40);
+    extern lv_obj_t *ui_image;
+    ui_image = lv_img_create(ui_screen_openai);
+    lv_img_set_src(ui_image, &dogprototype_img);
+    lv_obj_align(ui_image, LV_ALIGN_CENTER, 0, -20);
 
-    extern lv_obj_t *ui_dog_label;
-    ui_dog_label = lv_label_create(ui_screen_openai);
-    lv_label_set_text(ui_dog_label, "Cavemen's Best Friend\nWaiting for trigger...");
-    lv_obj_align(ui_dog_label, LV_ALIGN_CENTER, 0, 100);
-    lv_obj_set_style_text_color(ui_dog_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_align(ui_dog_label, LV_TEXT_ALIGN_CENTER, 0);
+    extern lv_obj_t *ui_label;
+    ui_label = lv_label_create(ui_screen_openai);
+    lv_label_set_text(ui_label, "Ready format!");
+    lv_obj_align(ui_label, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_set_style_text_color(ui_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_align(ui_label, LV_TEXT_ALIGN_CENTER, 0);
 }

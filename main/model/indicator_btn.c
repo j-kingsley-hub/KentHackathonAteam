@@ -18,27 +18,8 @@ static void __factory_reset_callback(void* arg)
 
 static void __btn_click_callback(void* arg)
 {
-    bool st=0;
-    if( sleep_flag ) {
-        ESP_LOGI("btn", "click, cur st: sleep mode, restart!");
-        fflush(stdout);
-        esp_restart();
-        return;
-    }
-    if( indicator_display_st_get()) {
-        ESP_LOGI("btn", "click, off");
-        indicator_display_off();
-
-        st = 0;
-        esp_event_post_to(view_event_handle, VIEW_EVENT_BASE, VIEW_EVENT_SCREEN_CTRL, &st, sizeof(st), portMAX_DELAY);
-    } else {
-        ESP_LOGI("btn", "click, on");
-        
-        st = 1;
-        esp_event_post_to(view_event_handle, VIEW_EVENT_BASE, VIEW_EVENT_SCREEN_CTRL, &st, sizeof(st), portMAX_DELAY);
-
-        indicator_display_on();
-    }
+    // Screen turn-off logic disabled per user request
+    ESP_LOGI("btn", "click, screen-off disabled");
 }
 
 static void __btn_double_click_callback(void* arg)
