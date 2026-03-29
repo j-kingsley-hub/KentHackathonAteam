@@ -15,9 +15,12 @@
 #include "indicator_view.h"
 // #include "indicator_controller.h"
 // Declare the external image structs
-extern const lv_img_dsc_t dogprototype_img;
-extern const lv_img_dsc_t dogprototype3_img;
-extern const lv_img_dsc_t dogTalking_img;
+extern const lv_img_dsc_t dog_idle_1_img;
+extern const lv_img_dsc_t dog_idle_2_img;
+extern const lv_img_dsc_t dog_talking_1_img;
+extern const lv_img_dsc_t dog_talking_2_img;
+extern const lv_img_dsc_t dog_scared_1_img;
+extern const lv_img_dsc_t dog_scared_2_img;
 extern const uint8_t magicrabit_jpg[];
 extern const size_t magicrabit_jpg_size;
 extern const uint8_t dinotest3_jpg[];
@@ -51,12 +54,21 @@ lv_obj_t *ui_selection_box = NULL;
 lv_obj_t *ui_selection_label = NULL;
 lv_obj_t *ui_selection_thumb = NULL;
 static lv_timer_t *image_toggle_timer = NULL;
-static bool button_showing_talking = false;
-static const lv_img_dsc_t *ui_images[] = {
-    &dogprototype_img,
-    &dogprototype3_img,
-};
-static uint8_t ui_image_index = 0;
+
+typedef enum
+{
+    DOG_STATE_IDLE,
+    DOG_STATE_TALKING,
+    DOG_STATE_SCARED
+} dog_state_t;
+
+static dog_state_t current_dog_state = DOG_STATE_IDLE;
+static uint8_t dog_anim_index = 0;
+// We will trigger TALKING manually on single click, and it will revert to IDLE or SCARED after
+
+static const lv_img_dsc_t *dog_idle_images[] = {&dog_idle_1_img, &dog_idle_2_img};
+static const lv_img_dsc_t *dog_talking_images[] = {&dog_talking_1_img, &dog_talking_2_img};
+static const lv_img_dsc_t *dog_scared_images[] = {&dog_scared_1_img, &dog_scared_2_img};
 
 typedef enum
 {
@@ -106,16 +118,20 @@ static void update_selection_label(void)
 static void image_toggle_timer_cb(lv_timer_t *timer)
 {
     (void)timer;
-    if (button_showing_talking)
-    {
-        button_showing_talking = false;
-        ui_image_index = 0;
-        lv_img_set_src(ui_image, ui_images[ui_image_index]);
-        return;
-    }
+    dog_anim_index = 1 - dog_anim_index;
 
-    ui_image_index = 1 - ui_image_index;
-    lv_img_set_src(ui_image, ui_images[ui_image_index]);
+    if (current_dog_state == DOG_STATE_TALKING)
+    {
+        lv_img_set_src(ui_image, dog_talking_images[dog_anim_index]);
+    }
+    else if (current_dog_state == DOG_STATE_SCARED)
+    {
+        lv_img_set_src(ui_image, dog_scared_images[dog_anim_index]);
+    }
+    else
+    {
+        lv_img_set_src(ui_image, dog_idle_images[dog_anim_index]);
+    }
 }
 
 static void button_single_click_cb(void *arg)
@@ -131,12 +147,9 @@ static void button_single_click_cb(void *arg)
     }
     else
     {
-        lv_img_set_src(ui_image, &dogTalking_img);
-        button_showing_talking = true;
-        if (image_toggle_timer != NULL)
-        {
-            lv_timer_reset(image_toggle_timer);
-        }
+        current_dog_state = DOG_STATE_TALKING;
+        dog_anim_index = 0;
+        lv_img_set_src(ui_image, dog_talking_images[dog_anim_index]);
     }
     if (ui_label)
     {
@@ -212,6 +225,34 @@ void update_ui(const char *voice_line, const char *color_hex_str)
     {
         lv_label_set_text(ui_label, voice_line ? voice_line : "Unknown Dog noise");
     }
+
+    // Set dog animation state based on response text threat level
+    if (voice_line != NULL)
+    {
+        // Simple case-insensitive-like search or just check for exact substring since prompt forces format
+        if (strstr(voice_line, "Dangerous") != NULL || strstr(voice_line, "dangerous") != NULL ||
+            strstr(voice_line, "Mild") != NULL || strstr(voice_line, "mild") != NULL)
+        {
+            current_dog_state = DOG_STATE_SCARED;
+        }
+        else
+        {
+            current_dog_state = DOG_STATE_IDLE; // "Safe" or unknown defaults to idle
+        }
+        dog_anim_index = 0;
+        if (ui_image)
+        {
+            if (current_dog_state == DOG_STATE_SCARED)
+            {
+                lv_img_set_src(ui_image, dog_scared_images[dog_anim_index]);
+            }
+            else
+            {
+                lv_img_set_src(ui_image, dog_idle_images[dog_anim_index]);
+            }
+        }
+    }
+
     lv_port_sem_give();
 }
 
@@ -252,7 +293,7 @@ void app_main(void)
     // We just need to start the timer!
     if (ui_image != NULL)
     {
-        lv_img_set_src(ui_image, ui_images[ui_image_index]);
+        lv_img_set_src(ui_image, dog_idle_images[dog_anim_index]);
         lv_obj_add_flag(ui_image, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(ui_image, ui_image_clicked_cb, LV_EVENT_CLICKED, NULL);
     }

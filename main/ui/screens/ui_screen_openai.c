@@ -165,10 +165,10 @@ void ui_screen_openai_screen_init(void)
     lv_obj_add_flag(ui_set_api_key_btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(ui_dalle_btn, LV_OBJ_FLAG_HIDDEN);
 
-    extern const lv_img_dsc_t dogprototype_img;
+    extern const lv_img_dsc_t dog_idle_1_img;
     extern lv_obj_t *ui_image;
     ui_image = lv_img_create(ui_screen_openai);
-    lv_img_set_src(ui_image, &dogprototype_img);
+    lv_img_set_src(ui_image, &dog_idle_1_img);
     lv_obj_align(ui_image, LV_ALIGN_LEFT_MID, 10, -20);
     // Send dog image to the background so it doesn't cover UI elements
     lv_obj_move_background(ui_image);
