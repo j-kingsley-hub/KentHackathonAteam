@@ -36,17 +36,23 @@ static void camera_frame_cb(uvc_frame_t *frame, void *ptr)
     }
 }
 
+static char global_camera_error[128] = "USB Task Running: NO physical connection ever detected on D+/D- pins (Usually 19/20).";
+static int camera_connect_cb_fired = 0;
+
 static void camera_state_cb(usb_stream_state_t state, void *ptr)
 {
+    camera_connect_cb_fired++;
     if (state == STREAM_CONNECTED)
     {
         ESP_LOGI(TAG, "USB Camera Connected");
         camera_ready = true;
+        snprintf(global_camera_error, sizeof(global_camera_error), "STATE CB: CONNECTED! (But no frame mapped to buffer yet)");
     }
     else
     {
         ESP_LOGI(TAG, "USB Camera Disconnected");
         camera_ready = false;
+        snprintf(global_camera_error, sizeof(global_camera_error), "STATE CB: DISCONNECTED! (Device un-plugged or power dropped)");
     }
 }
 
@@ -62,7 +68,7 @@ void usb_camera_init(void)
         .frame_buffer = heap_caps_malloc(150 * 1024, MALLOC_CAP_SPIRAM),
         .frame_width = FRAME_RESOLUTION_ANY,
         .frame_height = FRAME_RESOLUTION_ANY,
-        .frame_interval = 0, // Let driver pick matching interval
+        .frame_interval = FRAME_INTERVAL_FPS_15, // MUST be a valid interval!
         .format = UVC_FORMAT_MJPEG,
         .frame_cb = camera_frame_cb,
         .frame_cb_arg = NULL,
@@ -71,6 +77,7 @@ void usb_camera_init(void)
     if (uvc_config.xfer_buffer_a == NULL || uvc_config.xfer_buffer_b == NULL || uvc_config.frame_buffer == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate memory for USB stream buffers in SPIRAM");
+        snprintf(global_camera_error, sizeof(global_camera_error), "Init Fail: Out of SPIRAM memory.");
         return;
     }
 
@@ -78,6 +85,7 @@ void usb_camera_init(void)
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to config UVC stream: %s", esp_err_to_name(ret));
+        snprintf(global_camera_error, sizeof(global_camera_error), "Init Fail: uvc_streaming_config error.");
         return;
     }
 
@@ -85,12 +93,14 @@ void usb_camera_init(void)
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to register state cb: %s", esp_err_to_name(ret));
+        snprintf(global_camera_error, sizeof(global_camera_error), "Init Fail: state_register error.");
     }
 
     ret = usb_streaming_start();
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to start UVC stream: %s", esp_err_to_name(ret));
+        snprintf(global_camera_error, sizeof(global_camera_error), "Init fail: stream_start error (Check USB connection)");
     }
     else
     {
@@ -100,11 +110,19 @@ void usb_camera_init(void)
 
 bool usb_camera_capture_image(uint8_t **out_buf, size_t *out_size, const char **error_msg)
 {
+    // Check if the stream has connected silently
+    esp_err_t wait_res = usb_streaming_connect_wait(0);
+
     if (!camera_ready)
     {
         ESP_LOGE(TAG, "Camera not ready for capture.");
+        
+        if (camera_connect_cb_fired == 0) {
+            snprintf(global_camera_error, sizeof(global_camera_error), "Err: Wait returned %s. Interrupt CB never fired! Check USB Physical Port (D+/D-) & Hub Power.", esp_err_to_name(wait_res));
+        }
+        
         if (error_msg)
-            *error_msg = "Camera not ready.";
+            *error_msg = global_camera_error;
         return false;
     }
 
@@ -112,7 +130,7 @@ bool usb_camera_capture_image(uint8_t **out_buf, size_t *out_size, const char **
     {
         ESP_LOGW(TAG, "No frame captured yet.");
         if (error_msg)
-            *error_msg = "No frame captured yet.";
+            *error_msg = "Device connected & callbacks fired, but MJPEG callback never gave a frame. Unsupported cam codec?";
         return false;
     }
 
