@@ -176,7 +176,7 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
                 cJSON *color = cJSON_GetObjectItem(root, "color_hex");
                 if (response_text)
                 {
-                    update_ui(response_text, color && color->valuestring ? color->valuestring : "#101418");
+                    update_ui(response_text, "#FFFFFF");
                 }
                 else
                 {
