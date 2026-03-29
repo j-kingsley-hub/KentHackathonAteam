@@ -156,6 +156,17 @@ static void button_single_click_cb(void *arg)
     gemini_client_send_image(img_buf, img_size);
 }
 
+static void lvgl_send_task(void *arg)
+{
+    button_single_click_cb(NULL);
+    vTaskDelete(NULL);
+}
+
+static void ui_image_clicked_cb(lv_event_t *e)
+{
+    xTaskCreate(lvgl_send_task, "send_task", 8192, NULL, 5, NULL);
+}
+
 static void button_double_click_cb(void *arg)
 {
     (void)arg;
@@ -167,6 +178,17 @@ static void button_double_click_cb(void *arg)
         update_selection_label();
         lv_port_sem_give();
     }
+}
+
+static void lvgl_double_click_task(void *arg)
+{
+    button_double_click_cb(NULL);
+    vTaskDelete(NULL);
+}
+
+static void ui_selection_box_clicked_cb(lv_event_t *e)
+{
+    xTaskCreate(lvgl_double_click_task, "dbl_task", 4096, NULL, 5, NULL);
 }
 
 void update_ui(const char *voice_line, const char *color_hex_str)
@@ -229,6 +251,13 @@ void app_main(void)
     if (ui_image != NULL)
     {
         lv_img_set_src(ui_image, ui_images[ui_image_index]);
+        lv_obj_add_flag(ui_image, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(ui_image, ui_image_clicked_cb, LV_EVENT_CLICKED, NULL);
+    }
+    if (ui_selection_box != NULL)
+    {
+        lv_obj_add_flag(ui_selection_box, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_event_cb(ui_selection_box, ui_selection_box_clicked_cb, LV_EVENT_CLICKED, NULL);
     }
     image_toggle_timer = lv_timer_create(image_toggle_timer_cb, 500, NULL);
     update_selection_label();
