@@ -142,7 +142,8 @@ void app_main(void)
 
     // The view should have allocated ui_image and ui_label on ui_screen_openai
     // We just need to start the timer!
-    if (ui_image != NULL) {
+    if (ui_image != NULL)
+    {
         lv_img_set_src(ui_image, ui_images[ui_image_index]);
     }
     image_toggle_timer = lv_timer_create(image_toggle_timer_cb, 500, NULL);
