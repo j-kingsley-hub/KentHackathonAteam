@@ -29,6 +29,8 @@ extern const uint8_t cavemantest_jpg[];
 extern const size_t cavemantest_jpg_size;
 extern const uint8_t mammothtest_jpg[];
 extern const size_t mammothtest_jpg_size;
+extern const uint8_t asteroid_death_jpg[];
+extern const size_t asteroid_death_jpg_size;
 
 ESP_EVENT_DEFINE_BASE(VIEW_EVENT_BASE);
 esp_event_loop_handle_t view_event_handle;
@@ -76,6 +78,7 @@ typedef enum
     IMAGE_SELECTION_CAVEMAN,
     IMAGE_SELECTION_MAMMOTH,
     IMAGE_SELECTION_DINO3,
+    IMAGE_SELECTION_ASTEROID,
     IMAGE_SELECTION_COUNT,
 } image_selection_t;
 
@@ -85,6 +88,7 @@ static const char *selection_names[IMAGE_SELECTION_COUNT] = {
     "CaveManTest.jpg",
     "MammothTest.jpg",
     "DinoTest3.jpg",
+    "AsteroidDeath.jpg",
 };
 static const uint8_t *selection_buffers[IMAGE_SELECTION_COUNT] = {NULL};
 static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
@@ -98,7 +102,8 @@ static const lv_img_dsc_t *thumb_images[IMAGE_SELECTION_COUNT] = {
     &dino_thumb_img,
     &caveman_thumb_img,
     &mammoth_thumb_img,
-    &dino3_thumb_img,
+    &dino_thumb_img,    // Reuse dino_thumb_img for DinoTest3 since we didn't add a specific one
+    &mammoth_thumb_img, // Reuse mammoth for asteroid for now, or add a new thumb
 };
 
 static void update_selection_label(void)
@@ -288,6 +293,8 @@ void app_main(void)
     selection_sizes[IMAGE_SELECTION_MAMMOTH] = mammothtest_jpg_size;
     selection_buffers[IMAGE_SELECTION_DINO3] = dinotest3_jpg;
     selection_sizes[IMAGE_SELECTION_DINO3] = dinotest3_jpg_size;
+    selection_buffers[IMAGE_SELECTION_ASTEROID] = asteroid_death_jpg;
+    selection_sizes[IMAGE_SELECTION_ASTEROID] = asteroid_death_jpg_size;
 
     // The view should have allocated ui_image and ui_label on ui_screen_openai
     // We just need to start the timer!
