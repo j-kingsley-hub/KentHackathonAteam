@@ -18,8 +18,10 @@
 extern const lv_img_dsc_t dogprototype_img;
 extern const lv_img_dsc_t dogprototype3_img;
 extern const lv_img_dsc_t dogTalking_img;
-extern const uint8_t dinotest2_jpg[];
-extern const size_t dinotest2_jpg_size;
+extern const uint8_t magicrabit_jpg[];
+extern const size_t magicrabit_jpg_size;
+extern const uint8_t dinotest3_jpg[];
+extern const size_t dinotest3_jpg_size;
 extern const uint8_t cavemantest_jpg[];
 extern const size_t cavemantest_jpg_size;
 extern const uint8_t mammothtest_jpg[];
@@ -58,17 +60,19 @@ static uint8_t ui_image_index = 0;
 
 typedef enum
 {
-    IMAGE_SELECTION_DINO = 0,
+    IMAGE_SELECTION_MAGICRABIT = 0,
     IMAGE_SELECTION_CAVEMAN,
     IMAGE_SELECTION_MAMMOTH,
+    IMAGE_SELECTION_DINO3,
     IMAGE_SELECTION_COUNT,
 } image_selection_t;
 
-static image_selection_t current_selection = IMAGE_SELECTION_DINO;
+static image_selection_t current_selection = IMAGE_SELECTION_MAGICRABIT;
 static const char *selection_names[IMAGE_SELECTION_COUNT] = {
-    "DinoTest2.jpg",
+    "MagicRabit.jpg",
     "CaveManTest.jpg",
     "MammothTest.jpg",
+    "DinoTest3.jpg",
 };
 static const uint8_t *selection_buffers[IMAGE_SELECTION_COUNT] = {NULL};
 static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
@@ -211,12 +215,14 @@ void app_main(void)
     lv_port_sem_take();
     indicator_view_init();
 
-    selection_buffers[IMAGE_SELECTION_DINO] = dinotest2_jpg;
-    selection_sizes[IMAGE_SELECTION_DINO] = dinotest2_jpg_size;
+    selection_buffers[IMAGE_SELECTION_MAGICRABIT] = magicrabit_jpg;
+    selection_sizes[IMAGE_SELECTION_MAGICRABIT] = magicrabit_jpg_size;
     selection_buffers[IMAGE_SELECTION_CAVEMAN] = cavemantest_jpg;
     selection_sizes[IMAGE_SELECTION_CAVEMAN] = cavemantest_jpg_size;
     selection_buffers[IMAGE_SELECTION_MAMMOTH] = mammothtest_jpg;
     selection_sizes[IMAGE_SELECTION_MAMMOTH] = mammothtest_jpg_size;
+    selection_buffers[IMAGE_SELECTION_DINO3] = dinotest3_jpg;
+    selection_sizes[IMAGE_SELECTION_DINO3] = dinotest3_jpg_size;
 
     // The view should have allocated ui_image and ui_label on ui_screen_openai
     // We just need to start the timer!
