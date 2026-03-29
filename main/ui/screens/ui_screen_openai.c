@@ -179,8 +179,8 @@ void ui_screen_openai_screen_init(void)
     extern lv_obj_t *ui_selection_box;
     extern lv_obj_t *ui_selection_label;
     ui_selection_box = lv_obj_create(ui_screen_openai);
-    lv_obj_set_width(ui_selection_box, 220);
-    lv_obj_set_height(ui_selection_box, 80);
+    lv_obj_set_width(ui_selection_box, 200);
+    lv_obj_set_height(ui_selection_box, 220);
     lv_obj_align(ui_selection_box, LV_ALIGN_TOP_RIGHT, -10, 20);
     lv_obj_set_style_bg_color(ui_selection_box, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_selection_box, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -188,11 +188,15 @@ void ui_screen_openai_screen_init(void)
     lv_obj_set_style_border_width(ui_selection_box, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(ui_selection_box, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    extern lv_obj_t *ui_selection_thumb;
+    ui_selection_thumb = lv_img_create(ui_selection_box);
+    lv_obj_align(ui_selection_thumb, LV_ALIGN_BOTTOM_MID, 0, -20);
+
     ui_selection_label = lv_label_create(ui_selection_box);
     lv_obj_set_width(ui_selection_label, lv_pct(90));
     lv_label_set_long_mode(ui_selection_label, LV_LABEL_LONG_WRAP);
     lv_label_set_text(ui_selection_label, "Selected image:");
-    lv_obj_align(ui_selection_label, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(ui_selection_label, LV_ALIGN_TOP_MID, 0, 5);
     lv_obj_set_style_text_color(ui_selection_label, lv_color_hex(0x000000), 0);
     lv_obj_set_style_text_align(ui_selection_label, LV_TEXT_ALIGN_CENTER, 0);
 

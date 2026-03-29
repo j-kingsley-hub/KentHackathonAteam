@@ -47,6 +47,7 @@ lv_obj_t *ui_image = NULL;
 lv_obj_t *ui_label = NULL;
 lv_obj_t *ui_selection_box = NULL;
 lv_obj_t *ui_selection_label = NULL;
+lv_obj_t *ui_selection_thumb = NULL;
 static lv_timer_t *image_toggle_timer = NULL;
 static bool button_showing_talking = false;
 static const lv_img_dsc_t *ui_images[] = {
@@ -72,13 +73,27 @@ static const char *selection_names[IMAGE_SELECTION_COUNT] = {
 static const uint8_t *selection_buffers[IMAGE_SELECTION_COUNT] = {NULL};
 static size_t selection_sizes[IMAGE_SELECTION_COUNT] = {0};
 
+extern const lv_img_dsc_t dino_thumb_img;
+extern const lv_img_dsc_t caveman_thumb_img;
+extern const lv_img_dsc_t mammoth_thumb_img;
+
+static const lv_img_dsc_t *thumb_images[IMAGE_SELECTION_COUNT] = {
+    &dino_thumb_img,
+    &caveman_thumb_img,
+    &mammoth_thumb_img,
+};
+
 static void update_selection_label(void)
 {
     if (ui_selection_label)
     {
         char text[64];
-        snprintf(text, sizeof(text), "Selected: %s", selection_names[current_selection]);
+        snprintf(text, sizeof(text), "Selected:\n%s", selection_names[current_selection]);
         lv_label_set_text(ui_selection_label, text);
+    }
+    if (ui_selection_thumb)
+    {
+        lv_img_set_src(ui_selection_thumb, thumb_images[current_selection]);
     }
 }
 
