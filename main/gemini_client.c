@@ -1,5 +1,6 @@
 #include "gemini_client.h"
 #include "esp_http_client.h"
+#include "esp_crt_bundle.h"
 #include "esp_log.h"
 #include "cJSON.h"
 #include "mbedtls/base64.h"
@@ -252,6 +253,7 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
         .user_data = &response,
         .method = HTTP_METHOD_POST,
         .timeout_ms = 20000,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
