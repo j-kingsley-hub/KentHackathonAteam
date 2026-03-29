@@ -116,11 +116,12 @@ bool usb_camera_capture_image(uint8_t **out_buf, size_t *out_size, const char **
     if (!camera_ready)
     {
         ESP_LOGE(TAG, "Camera not ready for capture.");
-        
-        if (camera_connect_cb_fired == 0) {
+
+        if (camera_connect_cb_fired == 0)
+        {
             snprintf(global_camera_error, sizeof(global_camera_error), "Err: Wait returned %s. Interrupt CB never fired! Check USB Physical Port (D+/D-) & Hub Power.", esp_err_to_name(wait_res));
         }
-        
+
         if (error_msg)
             *error_msg = global_camera_error;
         return false;
