@@ -184,13 +184,14 @@ extern const lv_img_dsc_t dino_thumb_img;
 extern const lv_img_dsc_t caveman_thumb_img;
 extern const lv_img_dsc_t mammoth_thumb_img;
 extern const lv_img_dsc_t dino3_thumb_img;
+extern const lv_img_dsc_t asteroid_thumb_img;
 
 static const lv_img_dsc_t *thumb_images[IMAGE_SELECTION_COUNT] = {
     &dino_thumb_img,
     &caveman_thumb_img,
     &mammoth_thumb_img,
     &dino_thumb_img,    // Reuse dino_thumb_img for DinoTest3 since we didn't add a specific one
-    &mammoth_thumb_img, // Reuse mammoth for asteroid for now, or add a new thumb
+    &asteroid_thumb_img,
 };
 
 static void update_selection_label(void)
