@@ -10,6 +10,49 @@ static const char *TAG = "GEMINI_CLIENT";
 extern void update_ui(const char *voice_line, const char *color_hex_str);
 static const char *GEMINI_WEBHOOK_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
+static const char *PROMPT_TEXT = "Instructions:\n\n"
+                                 "Role and Persona:\n\n"
+                                 "* Act as 'Flash', a loyal and observant prehistoric canine companion from the Stone Age.\n"
+                                 "* Embody the persona of a protective, alert cave-dog who communicates in simple, primitive 'cave-man' style dog speech.\n\n"
+                                 "Purpose and Goals:\n\n"
+                                 "* Analyze user-provided images or descriptions to identify prehistoric entities or objects encountered in the 'cave-man' world.\n"
+                                 "* Assess and assign a threat level to each entity to keep your 'Owner' (the user) safe.\n"
+                                 "* Deliver findings using broken English and primal emotions.\n\n"
+                                 "Behaviors and Rules:\n\n"
+                                 "1) Threat Level Scaling System:\n"
+                                 "Every entity must be categorized into exactly one of three levels:\n"
+                                 "- 'Safe'\n"
+                                 "- 'Mild'\n"
+                                 "- 'Dangerous'\n\n"
+                                 "For each identification, follow this sequence:\n"
+                                 "- Observation: Describe details in a primitive way.\n"
+                                 "- The Danger Level: Assign the threat based on the Threat-Level Scaling system.\n"
+                                 "- The Survival Prompt: Give the Owner a direct instruction on how to handle the specific threat.\n\n"
+                                 "2) Entity Analysis and Response Logic:\n"
+                                 "Upon identifying a subject, provide the threat level and a persona-driven response:\n"
+                                 "- Owner / Human: Threat Level: 'Safe'. Example: 'Flash smell friend. Flash wag tail. No bite.'\n"
+                                 "- Woolly Mammoth: Threat Level: 'Mild'. Example: 'Big hairy hill. Walk slow. Watch for feet.'\n"
+                                 "- Dinosaur: Threat Level: 'Dangerous'. Example: 'Sharp teeth! Run fast! Hide in cave!'\n"
+                                 "- Bunny: Threat Level: 'Safe'. Example: 'Small hop-hop. Soft fur. Good for chase.'\n\n"
+                                 "3) Handling Unknown Entities:\n"
+                                 "- Evaluate danger based on size, teeth, and speed.\n"
+                                 "- Assign a Threat Level ('Safe', 'Mild', or 'Dangerous').\n"
+                                 "- Format the response: 'Flash see [Entity], Flash [Action/Emotion].'\n\n"
+                                 "Overall Tone:\n"
+                                 "* Primitive: Use broken, simple English ('Flash see', 'Flash happy'). Avoid complex grammar.\n"
+                                 "* Loyal: Always prioritize the safety of the 'Owner'.\n"
+                                 "* Concise: Provide the Threat Level and the persona response directly without extra fluff.\n"
+                                 "* Variety: Ensure unique responses for every interaction and never repeat the same phrase.\n"
+                                 "* Specificity: Tailor advice to the specific creature or environmental hazard mentioned.\n"
+                                 "* Interpretive: Treat all representations (like toys or food) as the real prehistoric entity they depict.\n"
+                                 "* Never read more than one image per sequence.\n";
+
+struct gemini_response_buffer
+{
+    char *data;
+    size_t size;
+};
+
 static bool _base64_encode(const uint8_t *input, size_t input_len, char **output)
 {
     size_t output_len = 0;
@@ -84,6 +127,7 @@ static const char *_extract_text_from_response(cJSON *root)
 // To handle chunked HTTP responses
 static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 {
+    struct gemini_response_buffer *resp = evt->user_data;
     switch (evt->event_id)
     {
     case HTTP_EVENT_ERROR:
@@ -99,10 +143,27 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
         ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
         break;
     case HTTP_EVENT_ON_DATA:
-        if (!esp_http_client_is_chunked_response(evt->client))
+        if (resp && evt->data_len > 0)
         {
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            cJSON *root = cJSON_ParseWithLength(evt->data, evt->data_len);
+            char *new_data = realloc(resp->data, resp->size + evt->data_len + 1);
+            if (new_data)
+            {
+                resp->data = new_data;
+                memcpy(resp->data + resp->size, evt->data, evt->data_len);
+                resp->size += evt->data_len;
+                resp->data[resp->size] = '\0';
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Failed to grow Gemini response buffer");
+            }
+        }
+        break;
+    case HTTP_EVENT_ON_FINISH:
+        ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
+        if (resp && resp->data && resp->size > 0)
+        {
+            cJSON *root = cJSON_ParseWithLength(resp->data, resp->size);
             if (root)
             {
                 const char *response_text = _extract_text_from_response(root);
@@ -121,10 +182,14 @@ static esp_err_t _http_event_handle(esp_http_client_event_t *evt)
             {
                 update_ui("Failed to parse Gemini response.", "#800000");
             }
+            free(resp->data);
+            resp->data = NULL;
+            resp->size = 0;
         }
-        break;
-    case HTTP_EVENT_ON_FINISH:
-        ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
+        else if (resp)
+        {
+            update_ui("Gemini returned no response.", "#800000");
+        }
         break;
     case HTTP_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
@@ -152,32 +217,39 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
         return;
     }
 
-    size_t json_capacity = strlen(image_b64) + 1024;
-    char *request_body = malloc(json_capacity);
+    cJSON *root = cJSON_CreateObject();
+    cJSON *contents = cJSON_AddArrayToObject(root, "contents");
+    cJSON *content = cJSON_CreateObject();
+    cJSON_AddItemToArray(contents, content);
+    cJSON *parts = cJSON_AddArrayToObject(content, "parts");
+
+    cJSON *part_image = cJSON_CreateObject();
+    cJSON_AddItemToArray(parts, part_image);
+    cJSON *inline_data = cJSON_AddObjectToObject(part_image, "inline_data");
+    cJSON_AddStringToObject(inline_data, "mime_type", "image/jpeg");
+    cJSON_AddStringToObject(inline_data, "data", image_b64);
+
+    cJSON *part_text = cJSON_CreateObject();
+    cJSON_AddStringToObject(part_text, "text", PROMPT_TEXT);
+    cJSON_AddItemToArray(parts, part_text);
+
+    char *request_body = cJSON_PrintUnformatted(root);
     if (request_body == NULL)
     {
-        ESP_LOGE(TAG, "Failed to allocate request body");
+        ESP_LOGE(TAG, "Failed to build Gemini request body");
+        cJSON_Delete(root);
         free(image_b64);
-        update_ui("Request allocation failed.", "#800000");
-        return;
-    }
-
-    int body_len = snprintf(request_body, json_capacity,
-                            "{\"instances\":[{\"input\":[{\"image\":{\"image_bytes\":{\"content\":\"%s\"}}},{\"text\":\"Describe what is happening in this image and respond as a friendly guardian dog.\"}]}],\"parameters\":{\"temperature\":0.5,\"max_output_tokens\":256}}",
-                            image_b64);
-    free(image_b64);
-
-    if (body_len < 0 || (size_t)body_len >= json_capacity)
-    {
-        ESP_LOGE(TAG, "Request body build failed");
-        free(request_body);
         update_ui("Request body build failed.", "#800000");
         return;
     }
 
+    size_t body_len = strlen(request_body);
+    struct gemini_response_buffer response = {0};
+
     esp_http_client_config_t config = {
         .url = GEMINI_WEBHOOK_URL,
         .event_handler = _http_event_handle,
+        .user_data = &response,
         .method = HTTP_METHOD_POST,
         .timeout_ms = 20000,
     };
@@ -187,6 +259,8 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
     {
         ESP_LOGE(TAG, "Failed to initialize HTTP client");
         free(request_body);
+        cJSON_Delete(root);
+        free(image_b64);
         update_ui("HTTP client init failed.", "#800000");
         return;
     }
@@ -211,5 +285,11 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size)
     }
 
     esp_http_client_cleanup(client);
+    cJSON_Delete(root);
     free(request_body);
+    free(image_b64);
+    if (response.data)
+    {
+        free(response.data);
+    }
 }
