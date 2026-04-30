@@ -51,14 +51,12 @@ void ui_screen_openai_screen_init(void)
     lv_obj_clear_flag(ui_openai_log, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
     ui_openai_response_box = lv_obj_create(ui_screen_openai);
-    lv_obj_set_width(ui_openai_response_box, 220);
-    lv_obj_set_height(ui_openai_response_box, 220);
+    lv_obj_set_width(ui_openai_response_box, 240);
+    lv_obj_set_height(ui_openai_response_box, 140);
     lv_obj_align(ui_openai_response_box, LV_ALIGN_BOTTOM_RIGHT, -10, -20);
     lv_obj_set_style_bg_color(ui_openai_response_box, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_openai_response_box, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(ui_openai_response_box, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(ui_openai_response_box, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_openai_response_box, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_openai_response_box, 220, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_openai_response_box, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_chatgpt_btn = lv_btn_create(ui_screen_openai);
     lv_obj_set_width(ui_chatgpt_btn, 300);

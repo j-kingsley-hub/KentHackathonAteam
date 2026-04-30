@@ -70,29 +70,32 @@ extern const lv_img_dsc_t img_bridge_thumb;
 extern const lv_img_dsc_t img_stairs_thumb;
 const lv_img_dsc_t *blind_thumbs[] = {&img_bridge_thumb, &img_stairs_thumb};
 
-const char* blind_selection_names[] = {"Bridge", "Stairs"};
+const char *blind_selection_names[] = {"Bridge", "Stairs"};
 
 extern const uint8_t bridge_jpg[];
 extern const unsigned int bridge_jpg_size;
 extern const uint8_t stairs_jpg[];
 extern const unsigned int stairs_jpg_size;
-const uint8_t *blind_selection_buffers[] = { bridge_jpg, stairs_jpg };
+const uint8_t *blind_selection_buffers[] = {bridge_jpg, stairs_jpg};
 
 // We define a function to get sizes dynamically, or we use a trick:
-size_t get_blind_size(int index) {
-    if (index == 0) return bridge_jpg_size;
+size_t get_blind_size(int index)
+{
+    if (index == 0)
+        return bridge_jpg_size;
     return stairs_jpg_size;
 }
-
 
 void update_blind_ui(const char *text, const char *color_hex_str)
 {
     ESP_LOGI(TAG, "Updating blind UI: %s", text);
     lv_port_sem_take();
-    if (ui_blind_label != NULL) {
+    if (ui_blind_label != NULL)
+    {
         lv_label_set_text(ui_blind_label, text);
     }
-    if (ui_blind_response_box != NULL && color_hex_str != NULL) {
+    if (ui_blind_response_box != NULL && color_hex_str != NULL)
+    {
         uint32_t color_val = strtol(color_hex_str + 1, NULL, 16);
         lv_obj_set_style_bg_color(ui_blind_response_box, lv_color_hex(color_val), 0);
     }
@@ -104,7 +107,8 @@ static void blind_button_single_click_cb(void *arg)
     const char *selected_name = blind_selection_names[current_blind_selection];
     ESP_LOGI(TAG, "Blind analysis: %s", selected_name);
     lv_port_sem_take();
-    if (ui_blind_label) {
+    if (ui_blind_label)
+    {
         char text[80];
         snprintf(text, sizeof(text), "Analyzing %s...", selected_name);
         lv_label_set_text(ui_blind_label, text);
@@ -113,7 +117,7 @@ static void blind_button_single_click_cb(void *arg)
 
     const uint8_t *img_buf = blind_selection_buffers[current_blind_selection];
     size_t img_size = get_blind_size(current_blind_selection);
-    gemini_client_send_image((uint8_t*)img_buf, img_size, true);
+    gemini_client_send_image((uint8_t *)img_buf, img_size, true);
 }
 
 static void lvgl_send_blind_task(void *arg)
@@ -130,11 +134,9 @@ static void blind_image_clicked_cb(lv_event_t *e)
 static void blind_selection_box_clicked_cb(lv_event_t *e)
 {
     current_blind_selection = (current_blind_selection + 1) % 2;
-    if (ui_blind_image != NULL) {
-        lv_img_set_src(ui_blind_image, blind_images[current_blind_selection]);
-        if (ui_blind_selection_thumb != NULL) {
-            lv_img_set_src(ui_blind_selection_thumb, blind_thumbs[current_blind_selection]);
-        }
+    if (ui_blind_selection_thumb != NULL)
+    {
+        lv_img_set_src(ui_blind_selection_thumb, blind_thumbs[current_blind_selection]);
     }
 }
 
@@ -190,7 +192,7 @@ static const lv_img_dsc_t *thumb_images[IMAGE_SELECTION_COUNT] = {
     &dino_thumb_img,
     &caveman_thumb_img,
     &mammoth_thumb_img,
-    &dino_thumb_img,    // Reuse dino_thumb_img for DinoTest3 since we didn't add a specific one
+    &dino_thumb_img, // Reuse dino_thumb_img for DinoTest3 since we didn't add a specific one
     &asteroid_thumb_img,
 };
 
@@ -215,15 +217,24 @@ static void image_toggle_timer_cb(lv_timer_t *timer)
 
     if (current_dog_state == DOG_STATE_TALKING)
     {
-        lv_img_set_src(ui_image, dog_talking_images[dog_anim_index]);
+        if (ui_image)
+            lv_img_set_src(ui_image, dog_talking_images[dog_anim_index]);
+        if (ui_blind_image)
+            lv_img_set_src(ui_blind_image, dog_talking_images[dog_anim_index]);
     }
     else if (current_dog_state == DOG_STATE_SCARED)
     {
-        lv_img_set_src(ui_image, dog_scared_images[dog_anim_index]);
+        if (ui_image)
+            lv_img_set_src(ui_image, dog_scared_images[dog_anim_index]);
+        if (ui_blind_image)
+            lv_img_set_src(ui_blind_image, dog_scared_images[dog_anim_index]);
     }
     else
     {
-        lv_img_set_src(ui_image, dog_idle_images[dog_anim_index]);
+        if (ui_image)
+            lv_img_set_src(ui_image, dog_idle_images[dog_anim_index]);
+        if (ui_blind_image)
+            lv_img_set_src(ui_blind_image, dog_idle_images[dog_anim_index]);
     }
 }
 
@@ -397,16 +408,18 @@ void app_main(void)
         lv_obj_add_flag(ui_selection_box, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(ui_selection_box, ui_selection_box_clicked_cb, LV_EVENT_CLICKED, NULL);
     }
-    
-    if (ui_blind_image != NULL) {
-        lv_img_set_src(ui_blind_image, blind_images[current_blind_selection]);
+
+    if (ui_blind_image != NULL)
+    {
         lv_obj_add_flag(ui_blind_image, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(ui_blind_image, blind_image_clicked_cb, LV_EVENT_CLICKED, NULL);
     }
-    if (ui_blind_selection_box != NULL) {
+    if (ui_blind_selection_box != NULL)
+    {
         lv_obj_add_flag(ui_blind_selection_box, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(ui_blind_selection_box, blind_selection_box_clicked_cb, LV_EVENT_CLICKED, NULL);
-        if (ui_blind_selection_thumb != NULL) {
+        if (ui_blind_selection_thumb != NULL)
+        {
             lv_img_set_src(ui_blind_selection_thumb, blind_thumbs[current_blind_selection]);
         }
     }

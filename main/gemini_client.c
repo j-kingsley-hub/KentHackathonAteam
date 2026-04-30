@@ -375,7 +375,7 @@ void gemini_client_send_image(uint8_t *img_buf, size_t img_size, bool is_blind)
     }
 
     esp_http_client_set_header(client, "Content-Type", "application/json");
-    const char *GEMINI_API_KEY = "-----------------";
+    const char *GEMINI_API_KEY = "AIzaSyCFv9Qgn9JPwrz_Z0ccLqQ1VtONeZv2QHs";
     esp_http_client_set_header(client, "x-goog-api-key", GEMINI_API_KEY);
     ESP_LOGI(TAG, "Using API key %s for authentication", GEMINI_API_KEY);
     esp_http_client_set_post_field(client, request_body, body_len);
